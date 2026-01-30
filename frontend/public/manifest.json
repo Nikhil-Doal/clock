@@ -1,0 +1,16 @@
+{
+  "name": "Ambient Clock",
+  "short_name": "Ambient Clock",
+  "description": "A production-ready ambient clock with weather, AI summaries, and more. Perfect for desktops, tablets, and wall displays.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
