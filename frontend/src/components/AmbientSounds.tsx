@@ -112,9 +112,9 @@ export function AmbientSounds() {
     return (
       <motion.button
         onClick={() => setIsExpanded(true)}
-        className="flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/70 transition-all"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         {hasActiveSounds ? (
           <Volume2 className="w-4 h-4 text-green-400" />
@@ -128,78 +128,90 @@ export function AmbientSounds() {
 
   return (
     <motion.div
-      className="bg-white/5 backdrop-blur-sm rounded-2xl p-6"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsExpanded(false);
+      }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white/80 font-medium">Ambient Sounds</h3>
-        <div className="flex items-center gap-2">
-          {hasActiveSounds && (
-            <button
-              onClick={stopAll}
-              className="text-white/40 hover:text-white/60 text-xs"
-            >
-              Stop All
-            </button>
-          )}
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="text-white/40 hover:text-white/60 text-sm"
-          >
-            Hide
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {SOUNDS.map((sound) => {
-          const isActive = activeSounds.has(sound.id);
-          const volume = volumes[sound.id] ?? 0.5;
-
-          return (
-            <div
-              key={sound.id}
-              className="flex items-center gap-3"
-            >
-              <motion.button
-                onClick={() => toggleSound(sound.id)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+      <motion.div
+        className="bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 min-w-[300px] border border-white/10"
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white/80 font-medium">Ambient Sounds</h3>
+          <div className="flex items-center gap-2">
+            {hasActiveSounds && (
+              <button
+                onClick={stopAll}
+                className="text-white/40 hover:text-white/60 text-xs"
               >
-                {sound.icon}
-                <span className="text-sm">{sound.name}</span>
-              </motion.button>
+                Stop All
+              </button>
+            )}
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="text-white/40 hover:text-white/60 text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
 
-              <AnimatePresence>
-                {isActive && (
-                  <motion.input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={(e) => setVolume(sound.id, parseFloat(e.target.value))}
-                    className="flex-1 accent-green-400 h-1"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                  />
-                )}
-              </AnimatePresence>
-            </div>
-          );
-        })}
-      </div>
+        <div className="space-y-3">
+          {SOUNDS.map((sound) => {
+            const isActive = activeSounds.has(sound.id);
+            const volume = volumes[sound.id] ?? 0.5;
 
-      <div className="mt-4 text-white/30 text-xs">
-        Mix multiple sounds together
-      </div>
+            return (
+              <div
+                key={sound.id}
+                className="flex items-center gap-3"
+              >
+                <motion.button
+                  onClick={() => toggleSound(sound.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {sound.icon}
+                  <span className="text-sm">{sound.name}</span>
+                </motion.button>
+
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={(e) => setVolume(sound.id, parseFloat(e.target.value))}
+                      className="flex-1 accent-green-400 h-1"
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 text-white/30 text-xs">
+          Mix multiple sounds together
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

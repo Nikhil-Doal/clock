@@ -12,6 +12,7 @@ export interface WeatherData {
   clouds?: number;
   sunrise?: number;
   sunset?: number;
+  timezoneOffset?: number; // Timezone offset in seconds from UTC
 }
 
 export interface HourlyForecast {
@@ -74,7 +75,7 @@ export interface AirQuality {
   };
 }
 
-export type ClockFont = 'mono' | 'rounded' | 'futuristic' | 'default';
+export type ClockFont = 'mono' | 'rounded' | 'futuristic' | 'default' | 'segment';
 export type TimeFormat = '12h' | '24h';
 export type TemperatureUnit = 'celsius' | 'fahrenheit';
 export type AISummaryStyle = 'friendly' | 'scientific' | 'eli5';
@@ -86,6 +87,9 @@ export interface ClockSettings {
   showDate: boolean;
   showGlow: boolean;
   timezone: string;
+  size: number; // 1-10 scale
+  color: string; // Hex color
+  glowColor: string; // Hex color for glow
 }
 
 export interface WeatherSettings {
@@ -105,8 +109,12 @@ export interface DisplaySettings {
   focusMode: boolean;
   showWeather: boolean;
   showAstronomy: boolean;
+  showAirQuality: boolean;
+  showWeatherPanel: boolean; // Right side panel with graph/radar/AI
   burnInPrevention: boolean;
   backgroundMode: 'solid' | 'gradient' | 'weather';
+  backgroundOpacity: number; // 0-100
+  solidBackgroundColor: string; // Hex color for solid background
 }
 
 export interface WorldClock {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, RefreshCw, MessageSquare, FlaskConical, Baby } from 'lucide-react';
+import { Sparkles, RefreshCw, MessageSquare, FlaskConical, Baby, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppStore } from '@/store';
 import { getWeatherSummary } from '@/lib/api';
 import type { AISummaryStyle } from '@/types';
@@ -14,7 +14,7 @@ export function AISummary() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSummary = async (summaryStyle: AISummaryStyle) => {
+  const fetchSummary = async (summaryStyle: AISummaryStyle, retryCount = 0) => {
     if (!currentWeather || !location) return;
 
     setIsLoading(true);
@@ -35,6 +35,11 @@ export function AISummary() {
       setAiSummary(result.summary);
       setStyle(summaryStyle);
     } catch {
+      // Auto-retry up to 2 times
+      if (retryCount < 2) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchSummary(summaryStyle, retryCount + 1);
+      }
       setError('AI summary unavailable');
     } finally {
       setIsLoading(false);
@@ -44,73 +49,73 @@ export function AISummary() {
   if (!currentWeather) return null;
 
   return (
-    <motion.div
-      className="w-full max-w-2xl mx-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.7 }}
-    >
+    <div className="w-full max-w-2xl mx-auto">
       <AnimatePresence mode="wait">
-        {aiSummary && isExpanded ? (
+        {isExpanded ? (
           <motion.div
             key="summary"
-            className="bg-white/5 backdrop-blur-sm rounded-2xl p-6"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
           >
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex items-center gap-2 text-white/60">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-purple-400" />
-                <span className="text-sm">AI Weather Summary</span>
+                <span className="text-white/70 text-sm font-medium">AI Weather Summary</span>
               </div>
-              <div className="flex gap-2">
-                <StyleButton
-                  icon={<MessageSquare className="w-3 h-3" />}
-                  label="Friendly"
-                  active={style === 'friendly'}
-                  onClick={() => fetchSummary('friendly')}
-                />
-                <StyleButton
-                  icon={<FlaskConical className="w-3 h-3" />}
-                  label="Scientific"
-                  active={style === 'scientific'}
-                  onClick={() => fetchSummary('scientific')}
-                />
-                <StyleButton
-                  icon={<Baby className="w-3 h-3" />}
-                  label="ELI5"
-                  active={style === 'eli5'}
-                  onClick={() => fetchSummary('eli5')}
-                />
-              </div>
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="p-1 text-white/40 hover:text-white/60 transition-colors"
+              >
+                <ChevronUp className="w-5 h-5" />
+              </button>
             </div>
 
-            <motion.p
-              className="text-white/80 text-lg leading-relaxed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2 text-white/50">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Generating summary...
-                </span>
-              ) : error ? (
-                <span className="text-white/40 text-base">
-                  {error} — AI features require a valid Gemini API key
-                </span>
-              ) : (
-                aiSummary
-              )}
-            </motion.p>
+            {/* Style Buttons */}
+            <div className="flex gap-2 px-5 py-3 border-b border-white/10">
+              <StyleButton
+                icon={<MessageSquare className="w-3.5 h-3.5" />}
+                label="Friendly"
+                active={style === 'friendly'}
+                onClick={() => fetchSummary('friendly')}
+                disabled={isLoading}
+              />
+              <StyleButton
+                icon={<FlaskConical className="w-3.5 h-3.5" />}
+                label="Scientific"
+                active={style === 'scientific'}
+                onClick={() => fetchSummary('scientific')}
+                disabled={isLoading}
+              />
+              <StyleButton
+                icon={<Baby className="w-3.5 h-3.5" />}
+                label="ELI5"
+                active={style === 'eli5'}
+                onClick={() => fetchSummary('eli5')}
+                disabled={isLoading}
+              />
+            </div>
 
-            <button
-              onClick={() => setIsExpanded(false)}
-              className="mt-4 text-sm text-white/40 hover:text-white/60 transition-colors"
-            >
-              Collapse
-            </button>
+            {/* Content */}
+            <div className="px-5 py-4 max-h-48 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-3 py-4 text-white/50">
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  <span>Generating summary...</span>
+                </div>
+              ) : error ? (
+                <div className="text-center py-4">
+                  <p className="text-red-400/80 text-sm">{error}</p>
+                  <p className="text-white/30 text-xs mt-1">Check your Gemini API key</p>
+                </div>
+              ) : (
+                <p className="text-white/90 text-base leading-relaxed">
+                  {aiSummary || 'Click a style above to generate a summary.'}
+                </p>
+              )}
+            </div>
           </motion.div>
         ) : (
           <motion.button
@@ -119,18 +124,21 @@ export function AISummary() {
               setIsExpanded(true);
               if (!aiSummary) fetchSummary('friendly');
             }}
-            className="flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors mx-auto"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 mx-auto px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/70 transition-all"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-purple-400" />
             <span className="text-sm">
-              {aiSummary ? 'Show AI summary' : 'Get AI weather summary'}
+              {aiSummary ? 'Show AI Summary' : 'Get AI Weather Summary'}
             </span>
+            <ChevronDown className="w-4 h-4" />
           </motion.button>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
@@ -139,20 +147,22 @@ interface StyleButtonProps {
   label: string;
   active: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-function StyleButton({ icon, label, active, onClick }: StyleButtonProps) {
+function StyleButton({ icon, label, active, onClick, disabled }: StyleButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
+      disabled={disabled}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${
         active
           ? 'bg-purple-500/30 text-purple-300'
-          : 'text-white/40 hover:text-white/60 hover:bg-white/5'
-      }`}
+          : 'text-white/50 hover:text-white/70 hover:bg-white/5'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {icon}
-      <span className="hidden sm:inline">{label}</span>
+      <span>{label}</span>
     </button>
   );
 }

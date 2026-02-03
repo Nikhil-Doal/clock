@@ -69,6 +69,9 @@ const defaultClockSettings: ClockSettings = {
   showDate: true,
   showGlow: true,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  size: 5,
+  color: '#ffffff',
+  glowColor: '#ffffff',
 };
 
 const defaultWeatherSettings: WeatherSettings = {
@@ -88,8 +91,12 @@ const defaultDisplaySettings: DisplaySettings = {
   focusMode: false,
   showWeather: true,
   showAstronomy: true,
+  showAirQuality: true,
+  showWeatherPanel: false,
   burnInPrevention: false,
   backgroundMode: 'weather',
+  backgroundOpacity: 50,
+  solidBackgroundColor: '#0a0a1a',
 };
 
 export const useAppStore = create<AppState>()(
@@ -159,7 +166,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'ambient-clock-storage',
-      version: 3, // Increment to clear stale data
+      version: 8, // Added clock size/color, AQI, background opacity, world clock icons
       partialize: (state) => ({
         location: state.location,
         clockSettings: state.clockSettings,
@@ -167,6 +174,21 @@ export const useAppStore = create<AppState>()(
         displaySettings: state.displaySettings,
         worldClocks: state.worldClocks,
       }),
+      migrate: (persistedState, version) => {
+        // Handle migrations from older versions
+        const state = persistedState as Partial<AppState>;
+        if (version < 7) {
+          // Reset to defaults for major version changes
+          return {
+            location: state.location || null,
+            clockSettings: { ...defaultClockSettings, ...state.clockSettings },
+            weatherSettings: { ...defaultWeatherSettings, ...state.weatherSettings },
+            displaySettings: { ...defaultDisplaySettings, ...state.displaySettings },
+            worldClocks: state.worldClocks || [],
+          };
+        }
+        return state;
+      },
     }
   )
 );

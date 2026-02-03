@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/store';
 import { WeatherIcon } from './WeatherIcon';
-import { formatTemperature } from '@/lib/utils';
+import { formatTemperature, cn } from '@/lib/utils';
 
 export function WeatherDisplay() {
   const { currentWeather, weatherSettings } = useAppStore();
@@ -18,20 +18,20 @@ export function WeatherDisplay() {
 
   return (
     <motion.div
-      className="flex items-center justify-center gap-8"
+      className="flex items-center justify-center gap-12"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       {/* Weather icon and temp */}
-      <div className="flex items-center gap-4">
-        <WeatherIcon code={currentWeather.icon} size="lg" />
+      <div className="flex items-center gap-6">
+        <WeatherIcon code={currentWeather.icon} size="xl" />
         <div>
-          <div className="text-5xl font-light text-white">
+          <div className="text-7xl sm:text-8xl font-light text-white">
             {formatTemperature(currentWeather.temp, tempUnit)}
           </div>
           {weatherSettings.showFeelsLike && (
-            <div className="text-sm text-white/50">
+            <div className="text-xl text-white/60">
               Feels like {formatTemperature(currentWeather.feels_like, tempUnit)}
             </div>
           )}
@@ -39,19 +39,19 @@ export function WeatherDisplay() {
       </div>
 
       {/* Description */}
-      <div className="text-xl text-white/70 capitalize">
+      <div className="text-3xl sm:text-4xl text-white/80 capitalize font-light">
         {currentWeather.description}
       </div>
 
       {/* Key stats */}
-      <div className="flex items-center gap-6 text-white/60">
-        <div className="flex items-center gap-2">
-          <Droplets className="w-4 h-4" />
-          <span className="text-sm">{currentWeather.humidity}%</span>
+      <div className="flex items-center gap-10 text-white/80">
+        <div className="flex items-center gap-3">
+          <Droplets className="w-8 h-8" />
+          <span className="text-3xl font-light">{currentWeather.humidity}%</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Wind className="w-4 h-4" />
-          <span className="text-sm">{Math.round(currentWeather.wind_speed)} {tempUnit === 'fahrenheit' ? 'mph' : 'm/s'}</span>
+        <div className="flex items-center gap-3">
+          <Wind className="w-8 h-8" />
+          <span className="text-3xl font-light">{Math.round(currentWeather.wind_speed)} {tempUnit === 'fahrenheit' ? 'mph' : 'm/s'}</span>
         </div>
       </div>
     </motion.div>

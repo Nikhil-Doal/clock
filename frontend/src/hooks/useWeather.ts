@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store';
 import * as api from '@/lib/api';
+import { getTimezoneFromOffset } from '@/lib/utils';
 import type { WeatherData, HourlyForecast, DailyForecast } from '@/types';
 
 const WEATHER_UPDATE_INTERVAL = 10 * 60 * 1000; // 10 minutes
@@ -19,6 +20,7 @@ export function useWeather() {
     setAirQuality,
     setIsLoading,
     setError,
+    updateClockSettings,
   } = useAppStore();
 
   const fetchInProgress = useRef(false);
@@ -59,8 +61,18 @@ export function useWeather() {
         clouds: currentData.clouds?.all,
         sunrise: currentData.sys.sunrise,
         sunset: currentData.sys.sunset,
+        timezoneOffset: currentData.timezone, // Timezone offset in seconds from UTC
       };
       setCurrentWeather(weather);
+
+      // Auto-update timezone based on location
+      if (currentData.timezone !== undefined) {
+        const offsetHours = currentData.timezone / 3600;
+        const tzName = getTimezoneFromOffset(offsetHours, location.lat);
+        if (tzName) {
+          updateClockSettings({ timezone: tzName });
+        }
+      }
 
       // Fetch forecast
       const forecastData = await api.getForecast(location.lat, location.lon, units);
@@ -118,19 +130,17 @@ export function useWeather() {
         // Astronomy is optional
       }
 
-      // Fetch air quality if enabled
-      if (weatherSettings.showAirQuality) {
-        try {
-          const aqData = await api.getAirQuality(location.lat, location.lon);
-          if (aqData.list?.[0]) {
-            setAirQuality({
-              aqi: aqData.list[0].main.aqi,
-              components: aqData.list[0].components,
-            });
-          }
-        } catch {
-          // Air quality is optional
+      // Always fetch air quality data
+      try {
+        const aqData = await api.getAirQuality(location.lat, location.lon);
+        if (aqData.list?.[0]) {
+          setAirQuality({
+            aqi: aqData.list[0].main.aqi,
+            components: aqData.list[0].components,
+          });
         }
+      } catch {
+        // Air quality is optional
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch weather');
@@ -142,7 +152,6 @@ export function useWeather() {
     location,
     currentWeather,
     weatherSettings.units,
-    weatherSettings.showAirQuality,
     setCurrentWeather,
     setHourlyForecast,
     setDailyForecast,
@@ -150,6 +159,7 @@ export function useWeather() {
     setAirQuality,
     setIsLoading,
     setError,
+    updateClockSettings,
   ]);
 
   // Fetch when location changes

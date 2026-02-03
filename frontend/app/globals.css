@@ -70,6 +70,19 @@ body {
   font-family: var(--font-orbitron), 'Orbitron', system-ui, sans-serif;
 }
 
+@font-face {
+  font-family: 'SevenSegment';
+  src: url('/fonts/SevenSegment.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-segment {
+  font-family: 'SevenSegment', var(--font-segment), monospace;
+  letter-spacing: 0.05em;
+}
+
 @keyframes glow {
   0%, 100% {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);

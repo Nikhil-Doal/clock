@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Nunito, Orbitron } from "next/font/google";
+import { Inter, JetBrains_Mono, Nunito, Orbitron, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,6 +19,12 @@ const nunito = Nunito({
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
+  subsets: ["latin"],
+});
+
+const shareTechMono = Share_Tech_Mono({
+  variable: "--font-segment",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -48,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${nunito.variable} ${orbitron.variable} antialiased bg-ambient-dark`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${nunito.variable} ${orbitron.variable} ${shareTechMono.variable} antialiased bg-ambient-dark`}
       >
         {children}
       </body>

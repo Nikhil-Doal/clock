@@ -29,16 +29,16 @@ export function AstronomyPanel() {
 
   return (
     <motion.div
-      className="flex flex-wrap items-center justify-center gap-6"
+      className="flex flex-wrap items-center justify-center gap-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.6 }}
     >
       {/* Sunrise */}
       {sunrise && (
-        <div className="flex items-center gap-2 text-white/60">
-          <Sunrise className="w-5 h-5 text-orange-400" />
-          <span className="text-sm">{sunrise}</span>
+        <div className="flex items-center gap-3 text-white/80">
+          <Sunrise className="w-8 h-8 text-orange-400" />
+          <span className="text-xl font-light">{sunrise}</span>
         </div>
       )}
 
@@ -52,21 +52,21 @@ export function AstronomyPanel() {
 
       {/* Sunset */}
       {sunset && (
-        <div className="flex items-center gap-2 text-white/60">
-          <Sunset className="w-5 h-5 text-purple-400" />
-          <span className="text-sm">{sunset}</span>
+        <div className="flex items-center gap-3 text-white/80">
+          <Sunset className="w-8 h-8 text-purple-400" />
+          <span className="text-xl font-light">{sunset}</span>
         </div>
       )}
 
       {/* Moon phase */}
       {astronomy && (
-        <div className="flex items-center gap-2 text-white/60">
-          <span className="text-2xl">
+        <div className="flex items-center gap-3 text-white/80">
+          <span className="text-4xl">
             {getMoonPhaseIcon(astronomy.moon.phase)}
           </span>
-          <div className="text-sm">
-            <div>{astronomy.moon.phase_name}</div>
-            <div className="text-xs text-white/40">
+          <div>
+            <div className="text-xl font-light">{astronomy.moon.phase_name}</div>
+            <div className="text-base text-white/50">
               {astronomy.moon.illumination}% illuminated
             </div>
           </div>
@@ -75,8 +75,8 @@ export function AstronomyPanel() {
 
       {/* Day length */}
       {astronomy && (
-        <div className="text-white/60 text-sm">
-          <span className="text-white/40">Day length: </span>
+        <div className="text-white/80 text-xl font-light">
+          <span className="text-white/50">Day: </span>
           {Math.floor(astronomy.sun.day_length_hours)}h{' '}
           {Math.round((astronomy.sun.day_length_hours % 1) * 60)}m
         </div>
@@ -107,7 +107,7 @@ function SunPositionIndicator({ sunrise, sunset }: SunPositionIndicatorProps) {
   const isDay = now >= sunrise && now <= sunset;
 
   return (
-    <div className="relative w-32 h-8">
+    <div className="relative w-48 h-12">
       {/* Arc path */}
       <svg
         viewBox="0 0 100 50"
@@ -118,16 +118,16 @@ function SunPositionIndicator({ sunrise, sunset }: SunPositionIndicatorProps) {
         <path
           d="M 5 45 Q 50 0 95 45"
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth="2"
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth="3"
         />
         {/* Progress arc */}
         {isDay && (
           <path
             d="M 5 45 Q 50 0 95 45"
             fill="none"
-            stroke="rgba(251,191,36,0.5)"
-            strokeWidth="2"
+            stroke="rgba(251,191,36,0.6)"
+            strokeWidth="3"
             strokeDasharray={`${progress * 100} 100`}
           />
         )}
@@ -135,7 +135,7 @@ function SunPositionIndicator({ sunrise, sunset }: SunPositionIndicatorProps) {
       {/* Sun position */}
       {isDay && (
         <motion.div
-          className="absolute w-3 h-3 bg-yellow-400 rounded-full shadow-lg shadow-yellow-400/50"
+          className="absolute w-5 h-5 bg-yellow-400 rounded-full shadow-lg shadow-yellow-400/50"
           style={{
             left: `${5 + progress * 90}%`,
             top: `${100 - Math.sin(progress * Math.PI) * 80}%`,

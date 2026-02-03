@@ -12,12 +12,12 @@ export function useGeolocation() {
 
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
-      // Set a default location (New York) as fallback
+      // Set a default location (Mississauga) as fallback
       setLocation({
-        lat: 40.7128,
-        lon: -74.006,
-        name: 'New York',
-        country: 'US',
+        lat: 43.5890,
+        lon: -79.6441,
+        name: 'Mississauga',
+        country: 'CA',
       });
       return;
     }
@@ -63,10 +63,10 @@ export function useGeolocation() {
       (error) => {
         // Set default location on error
         const defaultLocation = {
-          lat: 40.7128,
-          lon: -74.006,
-          name: 'New York',
-          country: 'US',
+          lat: 43.5890,
+          lon: -79.6441,
+          name: 'Mississauga',
+          country: 'CA',
         };
 
         switch (error.code) {

@@ -14,7 +14,7 @@ from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 import requests
 from cachetools import TTLCache
-import google.generativeai as genai
+from google import genai
 
 load_dotenv()
 
@@ -39,11 +39,10 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() == "true"  # Enable demo mode by default
 
 # Configure Gemini
+gemini_client = None
+GEMINI_MODEL = "gemini-2.5-flash"
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-2.0-flash')
-else:
-    gemini_model = None
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def get_demo_weather(lat, lon, units):
@@ -301,12 +300,16 @@ def geocode():
 @limiter.limit("10 per minute")
 def get_weather_summary():
     """Generate AI weather summary using Gemini."""
-    if not gemini_model:
+    if not gemini_client:
         return jsonify({"error": "Gemini API not configured"}), 503
 
     data = request.get_json()
-    weather_data = data.get("weather")
-    style = data.get("style", "friendly")  # friendly, scientific, eli5
+    # Support both 'weather' and 'current' keys for backwards compatibility
+    weather_data = data.get("weather") or data.get("current")
+    hourly_data = data.get("hourly", [])
+    daily_data = data.get("daily", [])
+    location_name = data.get("location", "Unknown")
+    style = data.get("style", "friendly")
 
     if not weather_data:
         return jsonify({"error": "weather data required"}), 400
@@ -314,6 +317,21 @@ def get_weather_summary():
     cache_key = f"summary_{hash(str(weather_data))}_{style}"
     if cache_key in ai_cache:
         return jsonify({"summary": ai_cache[cache_key]})
+
+    # Build hourly forecast text
+    hourly_text = ""
+    for h in hourly_data[:6]:
+        if isinstance(h, dict):
+            dt = datetime.fromtimestamp(h.get('dt', 0), tz=timezone.utc)
+            hourly_text += f"- {dt.strftime('%H:%M')}: {h.get('temp', 'N/A')}°, {h.get('weather', [{}])[0].get('description', 'N/A')}, Rain: {int(h.get('pop', 0)*100)}%\n"
+
+    # Build daily forecast text
+    daily_text = ""
+    for d in daily_data[:3]:
+        if isinstance(d, dict):
+            dt = datetime.fromtimestamp(d.get('dt', 0), tz=timezone.utc)
+            temp = d.get('temp', {})
+            daily_text += f"- {dt.strftime('%A')}: High {temp.get('max', 'N/A')}°, Low {temp.get('min', 'N/A')}°, {d.get('weather', [{}])[0].get('description', 'N/A')}\n"
 
     style_prompts = {
         "friendly": "Give a friendly, conversational weather summary. Be warm and helpful.",
@@ -324,24 +342,102 @@ def get_weather_summary():
     prompt = f"""
 {style_prompts.get(style, style_prompts["friendly"])}
 
-Based on this weather data, provide a brief summary (2-3 sentences):
+Based on this weather data, provide a helpful weather summary (3-4 sentences):
 
-Current conditions:
+**Current conditions in {location_name}:**
 - Temperature: {weather_data.get('temp', 'N/A')}°
 - Feels like: {weather_data.get('feels_like', 'N/A')}°
 - Conditions: {weather_data.get('description', 'N/A')}
 - Humidity: {weather_data.get('humidity', 'N/A')}%
 - Wind: {weather_data.get('wind_speed', 'N/A')} m/s
-- UV Index: {weather_data.get('uvi', 'N/A')}
 
-Location: {weather_data.get('location', 'Unknown')}
+**Upcoming hours:**
+{hourly_text or 'N/A'}
+
+**Upcoming days:**
+{daily_text or 'N/A'}
+
+Include what to expect and any recommendations. Use **bold** for important points.
 """
 
     try:
-        response = gemini_model.generate_content(prompt)
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
         summary = response.text
         ai_cache[cache_key] = summary
         return jsonify({"summary": summary})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 502
+
+
+@app.route("/api/ai/chat", methods=["POST"])
+@limiter.limit("20 per minute")
+def weather_chat():
+    """Chat with AI about weather - answer questions about the current weather."""
+    if not gemini_client:
+        return jsonify({"error": "Gemini API not configured"}), 503
+
+    data = request.get_json()
+    message = data.get("message", "")
+    weather_data = data.get("weather") or data.get("current")
+    hourly_data = data.get("hourly", [])
+    daily_data = data.get("daily", [])
+    location_name = data.get("location", "Unknown")
+    chat_history = data.get("history", [])
+
+    if not message:
+        return jsonify({"error": "message required"}), 400
+
+    # Build context about current weather
+    weather_context = f"""
+Current weather in {location_name}:
+- Temperature: {weather_data.get('temp', 'N/A') if weather_data else 'N/A'}°
+- Feels like: {weather_data.get('feels_like', 'N/A') if weather_data else 'N/A'}°
+- Conditions: {weather_data.get('description', 'N/A') if weather_data else 'N/A'}
+- Humidity: {weather_data.get('humidity', 'N/A') if weather_data else 'N/A'}%
+- Wind: {weather_data.get('wind_speed', 'N/A') if weather_data else 'N/A'} m/s
+"""
+
+    # Add hourly forecast context
+    if hourly_data:
+        weather_context += "\nUpcoming hours:\n"
+        for h in hourly_data[:8]:
+            if isinstance(h, dict):
+                dt = datetime.fromtimestamp(h.get('dt', 0), tz=timezone.utc)
+                weather_context += f"- {dt.strftime('%H:%M')}: {h.get('temp', 'N/A')}°, Rain: {int(h.get('pop', 0)*100)}%\n"
+
+    # Add daily forecast context
+    if daily_data:
+        weather_context += "\nUpcoming days:\n"
+        for d in daily_data[:5]:
+            if isinstance(d, dict):
+                dt = datetime.fromtimestamp(d.get('dt', 0), tz=timezone.utc)
+                temp = d.get('temp', {})
+                weather_context += f"- {dt.strftime('%A')}: High {temp.get('max', 'N/A')}°, Low {temp.get('min', 'N/A')}°\n"
+
+    # Build conversation history
+    conversation = ""
+    for msg in chat_history[-6:]:  # Last 6 messages for context
+        role = "User" if msg.get("role") == "user" else "Assistant"
+        conversation += f"{role}: {msg.get('content', '')}\n"
+
+    prompt = f"""You are a helpful weather assistant for an ambient clock display. Answer questions about the weather concisely and helpfully. Use **bold** for emphasis.
+
+{weather_context}
+
+{conversation}
+User: {message}
+
+Respond helpfully and concisely (2-3 sentences unless more detail is needed). If asked about something unrelated to weather, politely redirect to weather topics."""
+
+    try:
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
+        return jsonify({"response": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 502
 
@@ -350,7 +446,7 @@ Location: {weather_data.get('location', 'Unknown')}
 @limiter.limit("5 per minute")
 def get_daily_briefing():
     """Generate comprehensive daily briefing."""
-    if not gemini_model:
+    if not gemini_client:
         return jsonify({"error": "Gemini API not configured"}), 503
 
     data = request.get_json()
@@ -389,7 +485,10 @@ Provide a brief, calming daily briefing (3-4 sentences) that includes:
 """
 
     try:
-        response = gemini_model.generate_content(prompt)
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
         return jsonify({"briefing": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 502

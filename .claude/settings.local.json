@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(npm install:*)",
+      "Bash(\".venv/Scripts/pip.exe\" install -r backend/requirements.txt)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 5 \".venv/Scripts/python.exe\":*)",
+      "Bash(\".venv/Scripts/python.exe\" backend/app.py)",
+      "Bash(npm run dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(npm run lint:*)",
+      "Bash(timeout:*)",
+      "Bash(C:/Users/delta/Desktop/clock/.venv/Scripts/python.exe:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\start.ps1\")",
+      "Bash(..venvScriptspython.exe backend/app.py)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\delta\\\\Desktop\\\\clock && .venv\\\\Scripts\\\\python.exe backend\\\\app.py\")",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\frontend && npm run dev\")",
+      "Bash(cmd /c \"dir C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\.venv\\\\Scripts\\\\python.exe\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit with bug fixes\n\n- Fix deprecated datetime.utcnow\\(\\) calls in backend\n- Fix timezone-aware datetime subtraction for moon phase calculation\n- Update Gemini model from gemini-1.5-flash to gemini-2.0-flash\n- Add missing manifest.json for PWA support\n- Disable auto-dim by default and increase dim level for better visibility\n- Add graceful error handling for AI summary when API unavailable\n- Add .gitignore for project\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(powershell -Command \"cd ''C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\frontend''; npm run lint 2>&1\")",
+      "Bash(powershell -Command \"cd ''C:\\\\Users\\\\delta\\\\Desktop\\\\clock''; .\\\\start.ps1\")",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 5; Invoke-WebRequest -Uri ''http://localhost:5000/api/health'' -UseBasicParsing -TimeoutSec 10 | Select-Object -ExpandProperty Content\")",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell -NoProfile -Command \"Set-Content -Path ''C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\test.json'' -Value ''{\"\"weather\"\":{\"\"temp\"\":5,\"\"feels_like\"\":2,\"\"description\"\":\"\"cloudy\"\",\"\"humidity\"\":70,\"\"wind_speed\"\":10,\"\"location\"\":\"\"Mississauga\"\"},\"\"style\"\":\"\"friendly\"\"}''; curl.exe -s -X POST ''http://localhost:5000/api/ai/weather-summary'' -H ''Content-Type: application/json'' -d ''@C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\test.json''\")",
+      "Bash(powershell -NoProfile -Command \"curl.exe -s -X POST ''http://localhost:5000/api/ai/weather-summary'' -H ''Content-Type: application/json'' -d ''@C:\\\\Users\\\\delta\\\\Desktop\\\\clock\\\\test.json''\")",
+      "Bash(..venvScriptsActivate.ps1)",
+      "Bash(python:*)",
+      "Bash(ping:*)",
+      "Bash(\"./.venv/Scripts/python.exe\" backend/app.py)"
+    ]
+  }
+}

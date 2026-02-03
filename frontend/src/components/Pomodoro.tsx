@@ -77,9 +77,9 @@ export function Pomodoro() {
     return (
       <motion.button
         onClick={() => setIsExpanded(true)}
-        className="flex items-center gap-2 text-white/40 hover:text-white/60 transition-colors"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/70 transition-all"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         <Brain className="w-4 h-4" />
         <span className="text-sm">Focus Timer</span>
@@ -89,99 +89,110 @@ export function Pomodoro() {
 
   return (
     <motion.div
-      className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 min-w-[280px]"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isRunning) setIsExpanded(false);
+      }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white/80 font-medium">Focus Timer</h3>
-        <button
-          onClick={() => setIsExpanded(false)}
-          className="text-white/40 hover:text-white/60 text-sm"
-        >
-          Hide
-        </button>
-      </div>
-
-      {/* Mode selector */}
-      <div className="flex gap-2 mb-6">
-        <ModeButton
-          icon={<Brain className="w-3 h-3" />}
-          label="Work"
-          active={mode === 'work'}
-          onClick={() => resetTimer('work')}
-        />
-        <ModeButton
-          icon={<Coffee className="w-3 h-3" />}
-          label="Short"
-          active={mode === 'shortBreak'}
-          onClick={() => resetTimer('shortBreak')}
-        />
-        <ModeButton
-          icon={<Coffee className="w-3 h-3" />}
-          label="Long"
-          active={mode === 'longBreak'}
-          onClick={() => resetTimer('longBreak')}
-        />
-      </div>
-
-      {/* Timer display */}
-      <div className="relative flex items-center justify-center mb-6">
-        <svg className="w-40 h-40 transform -rotate-90">
-          <circle
-            cx="80"
-            cy="80"
-            r="70"
-            fill="none"
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth="8"
-          />
-          <motion.circle
-            cx="80"
-            cy="80"
-            r="70"
-            fill="none"
-            stroke={mode === 'work' ? '#ef4444' : '#22c55e'}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={440}
-            initial={{ strokeDashoffset: 440 }}
-            animate={{ strokeDashoffset: 440 * (1 - progress) }}
-            transition={{ duration: 0.5 }}
-          />
-        </svg>
-        <div className="absolute text-4xl font-mono text-white">
-          {formatTime(timeLeft)}
+      <motion.div
+        className="bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 min-w-[280px] border border-white/10"
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white/80 font-medium">Focus Timer</h3>
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="text-white/40 hover:text-white/60 text-sm"
+          >
+            Close
+          </button>
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4">
-        <motion.button
-          onClick={() => setIsRunning(!isRunning)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center ${
-            isRunning ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
-          }`}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          {isRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
-        </motion.button>
-        <motion.button
-          onClick={() => resetTimer()}
-          className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <RotateCcw className="w-4 h-4" />
-        </motion.button>
-      </div>
+        {/* Mode selector */}
+        <div className="flex gap-2 mb-6">
+          <ModeButton
+            icon={<Brain className="w-3 h-3" />}
+            label="Work"
+            active={mode === 'work'}
+            onClick={() => resetTimer('work')}
+          />
+          <ModeButton
+            icon={<Coffee className="w-3 h-3" />}
+            label="Short"
+            active={mode === 'shortBreak'}
+            onClick={() => resetTimer('shortBreak')}
+          />
+          <ModeButton
+            icon={<Coffee className="w-3 h-3" />}
+            label="Long"
+            active={mode === 'longBreak'}
+            onClick={() => resetTimer('longBreak')}
+          />
+        </div>
 
-      {/* Completed count */}
-      <div className="text-center mt-4 text-white/40 text-sm">
-        {completedPomodoros} pomodoros completed
-      </div>
+        {/* Timer display */}
+        <div className="relative flex items-center justify-center mb-6">
+          <svg className="w-40 h-40 transform -rotate-90">
+            <circle
+              cx="80"
+              cy="80"
+              r="70"
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="8"
+            />
+            <motion.circle
+              cx="80"
+              cy="80"
+              r="70"
+              fill="none"
+              stroke={mode === 'work' ? '#ef4444' : '#22c55e'}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={440}
+              initial={{ strokeDashoffset: 440 }}
+              animate={{ strokeDashoffset: 440 * (1 - progress) }}
+              transition={{ duration: 0.5 }}
+            />
+          </svg>
+          <div className="absolute text-4xl font-mono text-white">
+            {formatTime(timeLeft)}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-4">
+          <motion.button
+            onClick={() => setIsRunning(!isRunning)}
+            className={`w-14 h-14 rounded-full flex items-center justify-center ${
+              isRunning ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
+            }`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {isRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+          </motion.button>
+          <motion.button
+            onClick={() => resetTimer()}
+            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </motion.button>
+        </div>
+
+        {/* Completed count */}
+        <div className="text-center mt-4 text-white/40 text-sm">
+          {completedPomodoros} pomodoros completed
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Loader2, X } from 'lucide-react';
 import { useAppStore } from '@/store';
@@ -20,13 +20,17 @@ export function LocationSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  const handleSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim() || searchQuery.length < 2) {
+      setResults([]);
+      return;
+    }
 
     setIsSearching(true);
     try {
-      const data = await geocode(query);
+      const data = await geocode(searchQuery);
       setResults(data);
     } catch (error) {
       console.error('Search failed:', error);
@@ -34,7 +38,30 @@ export function LocationSearch() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
+
+  // Debounced auto-search as user types
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length >= 2) {
+      // Longer debounce for better multi-word city support
+      debounceRef.current = setTimeout(() => {
+        handleSearch(trimmedQuery);
+      }, 500);
+    } else {
+      setResults([]);
+    }
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [query, handleSearch]);
 
   const selectLocation = (result: SearchResult) => {
     setLocation({
@@ -93,23 +120,22 @@ export function LocationSearch() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Enter city name..."
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
+                  placeholder="Start typing a city name..."
                   className="w-full bg-white/10 text-white rounded-xl px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-white/20 placeholder-white/30"
                   autoFocus
                 />
-                <button
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white/60 transition-colors"
-                >
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40">
                   {isSearching ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <Search className="w-5 h-5" />
                   )}
-                </button>
+                </div>
               </div>
+              {query.length > 0 && query.length < 2 && (
+                <p className="text-white/30 text-xs mt-2">Type at least 2 characters to search</p>
+              )}
 
               <AnimatePresence>
                 {results.length > 0 && (
@@ -139,7 +165,7 @@ export function LocationSearch() {
                 )}
               </AnimatePresence>
 
-              <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
                 <button
                   onClick={() => {
                     if (navigator.geolocation) {
@@ -161,6 +187,9 @@ export function LocationSearch() {
                   <MapPin className="w-4 h-4" />
                   <span>Use current location</span>
                 </button>
+                <p className="text-white/30 text-xs">
+                  Search powered by OpenWeatherMap. Best results for major cities worldwide.
+                </p>
               </div>
             </motion.div>
           </motion.div>
