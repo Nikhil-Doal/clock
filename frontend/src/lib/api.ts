@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Use relative paths for Vercel serverless functions
+const API_BASE = '';
 
 interface FetchOptions extends RequestInit {
   timeout?: number;
@@ -23,9 +24,9 @@ async function fetchWithTimeout(
   } catch (error) {
     clearTimeout(id);
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timed out - is the backend running?');
+      throw new Error('Request timed out');
     }
-    throw new Error('Network error - is the backend running on ' + API_BASE + '?');
+    throw new Error('Network error - please check your connection');
   }
 }
 

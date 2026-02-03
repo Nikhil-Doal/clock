@@ -197,7 +197,7 @@ function ForecastPanel() {
       isPast: false,
     }));
 
-    const allData = [...pastData, currentData, ...futureData];
+    const allData = [...pastData, currentData, ...futureData] as any[];
 
     return allData.map((hour, index) => {
       const date = new Date(hour.dt * 1000);
@@ -287,7 +287,7 @@ function ForecastPanel() {
               </defs>
               <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={4} />
               <YAxis domain={[minTemp, maxTemp]} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} tickFormatter={(v) => `${v}°`} width={35} />
-              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value: number, name: string, props: any) => [`${value}°`, props.payload.isPast ? 'Past' : 'Forecast']} />
+              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value, _name, props: any) => [`${value ?? 0}°`, props?.payload?.isPast ? 'Past' : 'Forecast']} />
               {currentTime && <ReferenceLine x={currentTime} stroke="#22c55e" strokeWidth={2} strokeDasharray="4 4" />}
               <Area type="monotone" dataKey="temp" stroke="none" fill="url(#tempGradientFuture)" />
               <Line
@@ -297,7 +297,6 @@ function ForecastPanel() {
                 strokeWidth={2}
                 dot={TempDot}
                 activeDot={{ r: 3, fill: '#f97316' }}
-                strokeDasharray={(d: any) => d?.isPast ? "4 4" : "0"}
               />
               {/* Overlay gray line for past data */}
               <Line
@@ -324,7 +323,7 @@ function ForecastPanel() {
             <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={4} />
               <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} tickFormatter={(v) => `${v}%`} width={35} />
-              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value: number) => [`${value}%`, 'Rain']} />
+              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value) => [`${value ?? 0}%`, 'Rain']} />
               {currentTime && <ReferenceLine x={currentTime} stroke="#22c55e" strokeWidth={2} strokeDasharray="4 4" />}
               <Bar dataKey="pop" radius={[2, 2, 0, 0]}>
                 {chartData.map((entry, index) => (
@@ -347,7 +346,7 @@ function ForecastPanel() {
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={4} />
               <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} tickFormatter={(v) => `${v}%`} width={35} />
-              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value: number) => [`${value}%`, 'Humidity']} />
+              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value) => [`${value ?? 0}%`, 'Humidity']} />
               {currentTime && <ReferenceLine x={currentTime} stroke="#22c55e" strokeWidth={2} strokeDasharray="4 4" />}
               {/* Gray for past */}
               <Line type="monotone" dataKey={(d: any) => d.isPast ? d.humidity : null} stroke="#6b7280" strokeWidth={2} dot={false} />
@@ -369,7 +368,7 @@ function ForecastPanel() {
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={4} />
               <YAxis domain={[0, maxWind]} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} tickFormatter={(v) => `${v}`} width={35} />
-              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value: number) => [`${value} m/s`, 'Wind']} />
+              <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '12px' }} formatter={(value) => [`${value ?? 0} m/s`, 'Wind']} />
               {currentTime && <ReferenceLine x={currentTime} stroke="#22c55e" strokeWidth={2} strokeDasharray="4 4" />}
               <Line type="monotone" dataKey={(d: any) => d.isPast ? d.wind : null} stroke="#6b7280" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey={(d: any) => !d.isPast ? d.wind : null} stroke="#10b981" strokeWidth={2} dot={false} />
@@ -550,7 +549,7 @@ function AIChatPanel() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/weather-summary', {
+      const response = await fetch('/api/ai/weather-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -585,7 +584,7 @@ function AIChatPanel() {
     refreshPrompts();
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

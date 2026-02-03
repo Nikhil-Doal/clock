@@ -147,7 +147,7 @@ export function WeatherGraph() {
                 borderRadius: '8px',
                 color: 'white',
               }}
-              formatter={(value: number) => [`${value}${getUnit()}`, dataType]}
+              formatter={(value) => [`${value ?? 0}${getUnit()}`, dataType]}
             />
             <Area
               type="monotone"

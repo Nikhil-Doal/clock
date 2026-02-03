@@ -22,6 +22,11 @@ export interface HourlyForecast {
   humidity: number;
   weather: { description: string; icon: string }[];
   pop: number;
+  wind_speed?: number;
+  wind_deg?: number;
+  visibility?: number;
+  pressure?: number;
+  uvi?: number;
 }
 
 export interface DailyForecast {

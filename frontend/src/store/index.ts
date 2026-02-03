@@ -177,17 +177,14 @@ export const useAppStore = create<AppState>()(
       migrate: (persistedState, version) => {
         // Handle migrations from older versions
         const state = persistedState as Partial<AppState>;
-        if (version < 7) {
-          // Reset to defaults for major version changes
-          return {
-            location: state.location || null,
-            clockSettings: { ...defaultClockSettings, ...state.clockSettings },
-            weatherSettings: { ...defaultWeatherSettings, ...state.weatherSettings },
-            displaySettings: { ...defaultDisplaySettings, ...state.displaySettings },
-            worldClocks: state.worldClocks || [],
-          };
-        }
-        return state;
+        // Always return full state structure
+        return {
+          location: state.location ?? null,
+          clockSettings: { ...defaultClockSettings, ...state.clockSettings },
+          weatherSettings: { ...defaultWeatherSettings, ...state.weatherSettings },
+          displaySettings: { ...defaultDisplaySettings, ...state.displaySettings },
+          worldClocks: state.worldClocks || [],
+        };
       },
     }
   )
